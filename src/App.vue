@@ -97,7 +97,7 @@
           <div
             v-for="t of tickets"
             :key="t.name"
-            @click="sel = t"
+            @click="select(t)"
             :class="{
               'border-4': sel == t,
             }"
@@ -140,10 +140,12 @@
           {{ sel.name }} - USD
         </h3>
         <div class="flex items-end border-gray-600 border-b border-l h-64">
-          <div class="bg-purple-800 border w-10 h-24"></div>
-          <div class="bg-purple-800 border w-10 h-32"></div>
-          <div class="bg-purple-800 border w-10 h-48"></div>
-          <div class="bg-purple-800 border w-10 h-16"></div>
+          <div
+            v-for="(bar, idx) in normalizeGraph()"
+            :key="idx"
+            :style="{ height: `${bar}%` }"
+            class="bg-purple-800 border w-10"
+          ></div>
         </div>
         <button
           @click="sel = null"
@@ -183,23 +185,49 @@ export default {
 
   data() {
     return {
-      ticker: "default",
-      tickets: [
-        { name: "DEMO1", price: "11" },
-        { name: "DEMO2", price: "22" },
-        { name: "DEMO3", price: "33" },
-      ],
+      ticker: "",
+      tickets: [],
       sel: null,
+      graph: [],
     };
   },
   methods: {
     add() {
-      const newTicket = { name: this.ticker, price: "11" };
-      this.tickets.push(newTicket);
+      const currentTicket = { name: this.ticker, price: "-" };
+      this.tickets.push(currentTicket);
+      setInterval(async () => {
+        const f = await fetch(
+          `https://min-api.cryptocompare.com/data/price?fsym=${currentTicket.name}&tsyms=USD&api_key=e14ef8fed0c797833027f5a1d5e23f24835e382709e1a2b6f302cc0ac9d2b8cb`
+        );
+        const data = await f.json();
+        this.tickets.find((t) => t.name === currentTicket.name).price =
+          data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
+      }, 3000);
+
+      console.log({
+        1: this.sel?.name,
+        2: currentTicket.name,
+      });
+
+      if (this.sel?.name === currentTicket.name) {
+        console.log("PUSH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data.USD);
+        this.graph.push(data.USD);
+      }
       this.ticker = "";
+    },
+    select(ticket) {
+      this.sel = ticket;
+      this.graph = [];
     },
     handleDelete(tickerToRemove) {
       this.tickets = this.tickets.filter((t) => t !== tickerToRemove);
+    },
+    normalizeGraph() {
+      const maxValue = Math.max(...this.graph);
+      const minValue = Math.min(...this.graph);
+      return this.graph.map((price) => {
+        5 + ((price - maxValue) * 95) / (maxValue - minValue)
+      });
     },
   },
 };
