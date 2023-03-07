@@ -91,11 +91,11 @@
         </button>
       </section>
 
-      <template v-if="tickets.length">
+      <template v-if="tickers.length">
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="t of tickets"
+            v-for="t of tickers"
             :key="t.name"
             @click="select(t)"
             :class="{
@@ -186,35 +186,53 @@ export default {
   data() {
     return {
       ticker: "",
-      tickets: [],
+      tickers: [],
       sel: null,
       graph: [],
     };
   },
+
+  created() {
+    const tickersData = localStorage.getItem('cryptonomicon-list');
+    if (tickersData) {
+      this.tickers = JSON.parse(tickersData);
+      this.tickers?.forEach(ticker => {
+        this.subscribeToUpdates(ticker.name);
+      });
+    }
+  },
+
   methods: {
-    add() {
-      const currentTicket = { name: this.ticker, price: "-" };
-      this.tickets.push(currentTicket);
+    subscribeToUpdates(tickerName) {
       setInterval(async () => {
         const f = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${currentTicket.name}&tsyms=USD&api_key=e14ef8fed0c797833027f5a1d5e23f24835e382709e1a2b6f302cc0ac9d2b8cb`
+          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=e14ef8fed0c797833027f5a1d5e23f24835e382709e1a2b6f302cc0ac9d2b8cb`
         );
         const data = await f.json();
-        this.tickets.find((t) => t.name === currentTicket.name).price =
-          data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
-      }, 3000);
 
-      if (this.sel?.name === currentTicket.name) {
-        this.graph.push(data.USD);
-      }
+        this.tickers.find((t) => t.name === tickerName).price =
+          data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
+
+        if (this.sel?.name === tickerName) {
+          this.graph.push(data.USD);
+        }
+      }, 3000);
       this.ticker = "";
     },
+
+    add() {
+      const currentTicket = { name: this.ticker, price: "-" };
+      this.tickers.push(currentTicket);
+      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
+      this.subscribeToUpdates(currentTicket.name);
+    },
+
     select(ticket) {
       this.sel = ticket;
       this.graph = [];
     },
     handleDelete(tickerToRemove) {
-      this.tickets = this.tickets.filter((t) => t !== tickerToRemove);
+      this.tickers = this.tickers.filter((t) => t !== tickerToRemove);
     },
     normalizeGraph() {
       const maxValue = Math.max(...this.graph);
