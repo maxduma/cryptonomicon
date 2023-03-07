@@ -204,13 +204,7 @@ export default {
           data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
       }, 3000);
 
-      console.log({
-        1: this.sel?.name,
-        2: currentTicket.name,
-      });
-
       if (this.sel?.name === currentTicket.name) {
-        console.log("PUSH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data.USD);
         this.graph.push(data.USD);
       }
       this.ticker = "";
