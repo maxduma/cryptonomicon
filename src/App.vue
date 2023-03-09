@@ -94,10 +94,16 @@
       <template v-if="tickers.length">
           <hr class="w-full border-t border-gray-600 my-4" />
         <div>
-          <button  class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          <button
+          @click="page = page + 1"
+          v-if="hasNextPage"
+          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             next
           </button>
-          <button class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          <button
+          v-if="page > 1"
+          @click="page = page - 1"
+          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             back
           </button>
           <div>Filter:<input v-model="filter" /></div>
@@ -200,7 +206,8 @@ export default {
       sel: null,
       graph: [],
       page: 1,
-      filter: ''
+      filter: '',
+      hasNextPage: true,
     };
   },
 
@@ -216,7 +223,15 @@ export default {
 
   methods: {
     filteredTickers() {
-      return this.tickers.filter(ticker => ticker.name.includes(this.filter))
+      const start = (this.page - 1) * 6;
+      const end = this.page * 6 - 1;
+
+      const filteredTickers =  this.tickers
+      .filter(ticker => ticker.name.includes(this.filter))
+
+      this.hasNextPage = filteredTickers.length > end;
+
+      return filteredTickers.slice(start, end);
     },
     subscribeToUpdates(tickerName) {
       setInterval(async () => {
@@ -258,6 +273,11 @@ export default {
       });
     },
   },
+  watch: {
+    filter() {
+      this.page = 1;
+    }
+  }
 };
 </script>
 
