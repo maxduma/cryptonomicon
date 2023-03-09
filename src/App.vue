@@ -238,6 +238,7 @@ export default {
     add() {
       const currentTicket = { name: this.ticker, price: "-" };
       this.tickers.push(currentTicket);
+      this.filter = "";
       localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
       this.subscribeToUpdates(currentTicket.name);
     },
