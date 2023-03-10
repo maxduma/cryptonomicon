@@ -97,13 +97,15 @@
           <button
             @click="page = page + 1"
             v-if="hasNextPage"
-            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
             next
           </button>
           <button
             v-if="page > 1"
             @click="page = page - 1"
-            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
             back
           </button>
           <div>Filter:<input v-model="filter" @input="page = 1" /></div>
@@ -111,7 +113,7 @@
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="t of filteredTickers"
+            v-for="t of paginatedTickers"
             :key="t.name"
             @click="select(t)"
             :class="{
@@ -253,8 +255,13 @@ export default {
     normalizedGraph() {
       const maxValue = Math.max(...this.graph);
       const minValue = Math.min(...this.graph);
+
+      if (maxValue === minValue) {
+        return this.graph.map(() => 50);
+      }
+
       return this.graph.map((price) => {
-        5 + ((price - maxValue) * 95) / (maxValue - minValue)
+        5 + ((price - maxValue) * 95) / (maxValue - minValue);
       });
     },
   },
@@ -294,17 +301,20 @@ export default {
     },
   },
   watch: {
+    paginatedTickers() {
+      if (this.paginatedTickers.length === 0 & this.page > 1) {
+        this.page -= 1;
+      }
+    },
     filter() {
       this.page = 1;
-      const {protocol, host, pathname} = window.location;
       window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.page}`);
     },
     page() {
       this.page = 1;
-      const {protocol, host, pathname} = window.location;
       window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.page}`);
     },
-  }
+  },
 };
 </script>
 
