@@ -264,6 +264,12 @@ export default {
         5 + ((price - maxValue) * 95) / (maxValue - minValue);
       });
     },
+    pageStateOptions() {
+      return {
+        filter: this.filter,
+        page: this.page,
+      },
+    },
   },
 
   methods: {
@@ -316,11 +322,14 @@ export default {
     },
     filter() {
       this.page = 1;
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.page}`);
     },
-    page() {
+    pageStateOptions(value) {
       this.page = 1;
-      window.history.pushState(null, document.title, `${window.location.pathname}?filter=${this.filter}&page=${this.page}`);
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${value.filter}&page=${value.page}`
+      );
     },
   },
 };
