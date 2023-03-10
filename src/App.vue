@@ -92,26 +92,26 @@
       </section>
 
       <template v-if="tickers.length">
-          <hr class="w-full border-t border-gray-600 my-4" />
+        <hr class="w-full border-t border-gray-600 my-4" />
         <div>
           <button
-          @click="page = page + 1"
-          v-if="hasNextPage"
-          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            @click="page = page + 1"
+            v-if="hasNextPage"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             next
           </button>
           <button
-          v-if="page > 1"
-          @click="page = page - 1"
-          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            v-if="page > 1"
+            @click="page = page - 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             back
           </button>
-          <div>Filter:<input v-model="filter" /></div>
+          <div>Filter:<input v-model="filter" @input="page = 1" /></div>
         </div>
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="t of filteredTickers()"
+            v-for="t of filteredTickers"
             :key="t.name"
             @click="select(t)"
             :class="{
@@ -157,7 +157,7 @@
         </h3>
         <div class="flex items-end border-gray-600 border-b border-l h-64">
           <div
-            v-for="(bar, idx) in normalizeGraph()"
+            v-for="(bar, idx) in normalizedGraph"
             :key="idx"
             :style="{ height: `${bar}%` }"
             class="bg-purple-800 border w-10"
@@ -206,8 +206,7 @@ export default {
       sel: null,
       graph: [],
       page: 1,
-      filter: '',
-      hasNextPage: true,
+      filter: "",
     };
   },
 
@@ -227,24 +226,40 @@ export default {
     const tickersData = localStorage.getItem('cryptonomicon-list');
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
-      this.tickers?.forEach(ticker => {
+      this.tickers?.forEach((ticker) => {
         this.subscribeToUpdates(ticker.name);
       });
     }
   },
 
-  methods: {
-    filteredTickers() {
-      const start = (this.page - 1) * 6;
-      const end = this.page * 6 - 1;
-
-      const filteredTickers =  this.tickers
-      .filter(ticker => ticker.name.includes(this.filter))
-
-      this.hasNextPage = filteredTickers.length > end;
-
-      return filteredTickers.slice(start, end);
+  computed: {
+    startIndex() {
+      return (this.page - 1) * 6;
     },
+    endIndex() {
+      return this.page * 6 - 1;
+    },
+    filteredTickers() {
+      return this.tickers.filter((ticker) => {
+        ticker.name.includes(this.filter);
+      });
+    },
+    paginatedTickers() {
+      return this.filteredTickers.slice(this.startIndex, this.endIndex);
+    },
+    hasNextPage() {
+      return this.filteredTickers.length > this.endIndex;
+    },
+    normalizedGraph() {
+      const maxValue = Math.max(...this.graph);
+      const minValue = Math.min(...this.graph);
+      return this.graph.map((price) => {
+        5 + ((price - maxValue) * 95) / (maxValue - minValue)
+      });
+    },
+  },
+
+  methods: {
     subscribeToUpdates(tickerName) {
       setInterval(async () => {
         const f = await fetch(
@@ -276,13 +291,6 @@ export default {
     },
     handleDelete(tickerToRemove) {
       this.tickers = this.tickers.filter((t) => t !== tickerToRemove);
-    },
-    normalizeGraph() {
-      const maxValue = Math.max(...this.graph);
-      const minValue = Math.min(...this.graph);
-      return this.graph.map((price) => {
-        5 + ((price - maxValue) * 95) / (maxValue - minValue)
-      });
     },
   },
   watch: {
