@@ -286,9 +286,8 @@ export default {
 
     add() {
       const currentTicket = { name: this.ticker, price: "-" };
-      this.tickers.push(currentTicket);
+      this.tickers = [...this.tickers, currentTicket];
       this.filter = "";
-      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
       this.subscribeToUpdates(currentTicket.name);
     },
 
@@ -306,6 +305,9 @@ export default {
   watch: {
     selectedTicket() {
       this.graph = [];
+    },
+    tickers() {
+      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
     },
     paginatedTickers() {
       if (this.paginatedTickers.length === 0 & this.page > 1) {
