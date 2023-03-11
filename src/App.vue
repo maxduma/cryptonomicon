@@ -198,6 +198,7 @@
 </template>
 
 <script>
+import { loadTicker } from './api';
 export default {
   name: "App",
 
@@ -275,10 +276,7 @@ export default {
   methods: {
     subscribeToUpdates(tickerName) {
       setInterval(async () => {
-        const f = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=e14ef8fed0c797833027f5a1d5e23f24835e382709e1a2b6f302cc0ac9d2b8cb`
-        );
-        const data = await f.json();
+        const ticker = loadTicker(tickerName);
 
         this.tickers.find((t) => t.name === tickerName).price =
           data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
