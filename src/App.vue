@@ -282,7 +282,18 @@ export default {
 
       this.tickers.forEach((ticker) => {
         const price = exchangeData[ticker.name.toUpperCase()];
-        ticker.price = price;
+
+        if (!price) {
+          ticker.price = "-";
+          return;
+        }
+
+        const normalizedPrice = 1 / price;
+        const formattedPrice =
+          normalizedPrice > 1
+            ? normalizedPrice.toFixed(3)
+            : normalizedPrice.toPrecision(3);
+        ticker.price = formattedPrice;
       });
     },
 
