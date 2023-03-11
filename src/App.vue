@@ -227,12 +227,12 @@ export default {
     }
 
     const tickersData = localStorage.getItem('cryptonomicon-list');
+
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
-      this.tickers?.forEach((ticker) => {
-        this.subscribeToUpdates(ticker.name);
-      });
     }
+
+    setInterval(this.updatedTickers, 5000);
   },
 
   computed: {
@@ -269,30 +269,27 @@ export default {
       return {
         filter: this.filter,
         page: this.page,
-      },
-    },
+      };
+    }
   },
 
   methods: {
-    subscribeToUpdates(tickerName) {
-      setInterval(async () => {
-        const ticker = loadTicker(tickerName);
+    async updatedTickers() {
+      if (!this.tickers.length) {
+        return;
+      }
+      const exchangeData = await loadTicker(this.tickers.map((t) => {t.name}));
 
-        this.tickers.find((t) => t.name === tickerName).price =
-          data.USD > 1 ? data.USD.toFixed(3) : data.USD.toPrecision(3);
-
-        if (this.sel?.name === tickerName) {
-          this.graph.push(data.USD);
-        }
-      }, 3000);
-      this.ticker = "";
+      this.tickers.forEach((ticker) => {
+        const price = exchangeData[ticker.name.toUpperCase()];
+        ticker.price = price;
+      });
     },
 
     add() {
       const currentTicket = { name: this.ticker, price: "-" };
       this.tickers = [...this.tickers, currentTicket];
       this.filter = "";
-      this.subscribeToUpdates(currentTicket.name);
     },
 
     select(ticket) {
