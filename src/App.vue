@@ -126,7 +126,7 @@
                 {{ t.name }} - USD
               </dt>
               <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                {{ t.price }}
+                {{ formatPrice(t.price) }}
               </dd>
             </div>
             <div class="w-full border-t border-gray-200"></div>
@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { loadTicker } from './api';
+import { loadTickers } from './api';
 export default {
   name: "App",
 
@@ -274,26 +274,21 @@ export default {
   },
 
   methods: {
+    formatPrice(price) {
+      if (price === "-") {
+        return price;
+      }
+      return price > 1 ? price.toFixed(3) : price.toPrecision(3);
+    },
     async updatedTickers() {
       if (!this.tickers.length) {
         return;
       }
-      const exchangeData = await loadTicker(this.tickers.map((t) => {t.name}));
+      const exchangeData = await loadTickers(this.tickers.map((t) => {t.name}));
 
       this.tickers.forEach((ticker) => {
         const price = exchangeData[ticker.name.toUpperCase()];
-
-        if (!price) {
-          ticker.price = "-";
-          return;
-        }
-
-        const normalizedPrice = 1 / price;
-        const formattedPrice =
-          normalizedPrice > 1
-            ? normalizedPrice.toFixed(3)
-            : normalizedPrice.toPrecision(3);
-        ticker.price = formattedPrice;
+        ticker.price = price ?? "-";
       });
     },
 
