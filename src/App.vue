@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { subscribeToTickers } from "./api";
+import { subscribeToTickers, unsubscribeToTickers } from "./api";
 export default {
   name: "App",
 
@@ -290,23 +290,14 @@ export default {
       }
       return price > 1 ? price.toFixed(3) : price.toPrecision(3);
     },
-    async updatedTickers() {
-      // if (!this.tickers.length) {
-      //   return;
-      // }
-
-      // this.tickers.forEach((ticker) => {
-      //   const price = exchangeData[ticker.name.toUpperCase()];
-      //   ticker.price = price ?? "-";
-      // });
-    },
 
     add() {
       const currentTicket = { name: this.ticker, price: "-" };
       this.tickers = [...this.tickers, currentTicket];
+      this.ticker = "";
       this.filter = "";
-      subscribeToTickers(this.ticker.name, (newPrice) => {
-        this.updatedTicker(this.ticker.name, newPrice);
+      subscribeToTickers(currentTicket.name, (newPrice) => {
+        this.updatedTicker(currentTicket.name, newPrice);
       });
     },
 
@@ -319,6 +310,7 @@ export default {
       if (this.selectedTicket === tickerToRemove) {
         this.selectedTicket = null;
       }
+      subscribeToTickers(tickerToRemove.name);
     },
   },
   watch: {
