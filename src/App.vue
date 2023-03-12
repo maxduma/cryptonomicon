@@ -231,7 +231,9 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach((ticker) => {
-        subscribeToTickers(ticker.name, () => {});
+        subscribeToTickers(ticker.name, (newPrice) => {
+          this.updatedTicker(ticker.name, newPrice);
+        });
       });
     }
 
@@ -277,6 +279,11 @@ export default {
   },
 
   methods: {
+    updatedTicker(tickerName, price) {
+      this.tickers
+        .filter((t) => {t.name === tickerName})
+        .forEach((t) => {t.price = price});
+    },
     formatPrice(price) {
       if (price === "-") {
         return price;
@@ -298,7 +305,9 @@ export default {
       const currentTicket = { name: this.ticker, price: "-" };
       this.tickers = [...this.tickers, currentTicket];
       this.filter = "";
-       subscribeToTickers(this.ticker.name, () => {});
+      subscribeToTickers(this.ticker.name, (newPrice) => {
+        this.updatedTicker(this.ticker.name, newPrice);
+      });
     },
 
     select(ticket) {
