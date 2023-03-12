@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { loadTickers } from './api';
+import { subscribeToTickers } from "./api";
 export default {
   name: "App",
 
@@ -230,6 +230,9 @@ export default {
 
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach((ticker) => {
+        subscribeToTickers(ticker.name, () => {});
+      });
     }
 
     setInterval(this.updatedTickers, 5000);
@@ -281,21 +284,21 @@ export default {
       return price > 1 ? price.toFixed(3) : price.toPrecision(3);
     },
     async updatedTickers() {
-      if (!this.tickers.length) {
-        return;
-      }
-      const exchangeData = await loadTickers(this.tickers.map((t) => {t.name}));
+      // if (!this.tickers.length) {
+      //   return;
+      // }
 
-      this.tickers.forEach((ticker) => {
-        const price = exchangeData[ticker.name.toUpperCase()];
-        ticker.price = price ?? "-";
-      });
+      // this.tickers.forEach((ticker) => {
+      //   const price = exchangeData[ticker.name.toUpperCase()];
+      //   ticker.price = price ?? "-";
+      // });
     },
 
     add() {
       const currentTicket = { name: this.ticker, price: "-" };
       this.tickers = [...this.tickers, currentTicket];
       this.filter = "";
+       subscribeToTickers(this.ticker.name, () => {});
     },
 
     select(ticket) {
