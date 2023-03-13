@@ -8,12 +8,12 @@ const AGGREGATE_INDEX = "5";
 socket.addEventListener('message', (e) => {
   const {TYPE: type, FROMSYMBOL: currency, PRICE: newPrice} = JSON.parse(e.data);
 
-  if (type !== AGGREGATE_INDEX) {
+  if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
   }
 
   const handles = tickersHandlers.get(currency) ?? [];
-      handles.forEach((fn) => {fn(newPrice)});
+  handles.forEach((fn) => {fn(newPrice)});
 });
 
 const sendToWebSocket = (message) => {
