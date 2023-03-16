@@ -157,7 +157,10 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
           {{ selectedTicket.name }} - USD
         </h3>
-        <div class="flex items-end border-gray-600 border-b border-l h-64">
+        <div
+          class="flex items-end border-gray-600 border-b border-l h-64"
+          ref="graph"
+        >
           <div
             v-for="(bar, idx) in normalizedGraph"
             :key="idx"
@@ -210,6 +213,7 @@ export default {
       graph: [],
       page: 1,
       filter: "",
+      maxGraphElements: 1,
     };
   },
 
@@ -238,6 +242,14 @@ export default {
     }
 
     setInterval(this.updatedTickers, 5000);
+  },
+
+  mounted() {
+    window.addEventListener("resize", this.calculationMaxGraph);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.calculationMaxGraph);
   },
 
   computed: {
@@ -279,12 +291,21 @@ export default {
   },
 
   methods: {
+    calculationMaxGraph() {
+      if (!this.$refs.graph) {
+        return;
+      }
+      this.maxGraphElements = this.$graph.clientWidth / 38;
+    },
     updatedTicker(tickerName, price) {
       this.tickers
-        .filter((t) => {t.name === tickerName})
+        .filter((t) => t.name === tickerName)
         .forEach((t) => {
           if (t === this.selectedTicket) {
             this.graph.push(price);
+            while (this.graph.length > this.maxGraphElements) {
+              this.graph.shift();
+            }
           }
           t.price = price;
         });
