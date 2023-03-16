@@ -295,7 +295,7 @@ export default {
       if (!this.$refs.graph) {
         return;
       }
-      this.maxGraphElements = this.$graph.clientWidth / 38;
+      this.maxGraphElements = this.$refs.graph.clientWidth / 38;
     },
     updatedTicker(tickerName, price) {
       this.tickers
@@ -340,8 +340,10 @@ export default {
     },
   },
   watch: {
-    selectedTicket() {
+    async selectedTicket() {
       this.graph = [];
+      await this.$nextTick();
+      this.maxGraphElements();
     },
     tickers() {
       localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
