@@ -340,10 +340,10 @@ export default {
     },
   },
   watch: {
-    async selectedTicket() {
+    selectedTicket() {
       this.graph = [];
-      await this.$nextTick();
-      this.maxGraphElements();
+
+      this.$nextTick().then(this.calculationMaxGraph);
     },
     tickers() {
       localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
